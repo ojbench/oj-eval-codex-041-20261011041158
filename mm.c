@@ -133,7 +133,7 @@ static void place(unsigned char *p, uint32_t need, uint32_t total) {
     }
 }
 
-/* Bounded best-fit within each nonempty class; extend only if no fit exists. */
+/* First fit within each nonempty class; extend only if no fit exists. */
 void *malloc(size_t size) {
     uint32_t need = adjusted(size);
     if (!need) return NULL;
@@ -141,14 +141,12 @@ void *malloc(size_t size) {
     uint32_t mask = nonempty & (~0u << bin(need));
     while (mask) {
         unsigned b = (unsigned)__builtin_ctz(mask);
-        uint32_t best_size = UINT32_MAX;
-        unsigned candidates = 0;
         for (uint32_t off = heads[b]; off; off = word(at(off) + 8)) {
             unsigned char *p = at(off);
             uint32_t n = size_of(p);
             if (n >= need) {
-                if (n < best_size) { best = p; best_size = n; }
-                if (n == need || ++candidates == 4) break;
+                best = p;
+                break;
             }
         }
         if (best) break;
