@@ -158,9 +158,13 @@ void *malloc(size_t size) {
         unsigned char *end = (unsigned char *)mem_heap_hi() - 3;
         uint32_t tail = (word(end) & PREV_USED) ? 0 : word(end - 4);
         uint32_t growth = need - tail;
-        if (growth < MIN_BLOCK) growth = MIN_BLOCK;
-        best = extend(growth);
-        if (!best) return NULL;
+        if (mem_sbrk((int)growth) == (void *)-1) return NULL;
+        best = end - tail;
+        uint32_t flags = word(best) & PREV_USED;
+        if (tail) unlink_block(best);
+        put(best, need | flags | USED);
+        put(best + need, USED | PREV_USED);
+        return best + 4;
     }
     uint32_t total = size_of(best);
     unlink_block(best);
