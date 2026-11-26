@@ -1,0 +1,9 @@
+CMakeFiles/
+CMakeCache.txt
+.env
+.acmoj_token
+*.o
+code
+mdriver
+allocator_test
+build/
