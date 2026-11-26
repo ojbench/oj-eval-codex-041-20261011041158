@@ -10,7 +10,7 @@ mdriver: mdriver.o $(COMMON)
 	$(CC) $(CFLAGS) -o $@ $^
 mdriver-oj.o: mdriver.c
 	$(CC) $(CFLAGS) -DOJ -Wno-unused-variable -Wno-unused-parameter -Wno-unused-function -Wno-unused-but-set-variable -Wno-unused-result -c $< -o $@
-$(OBJS): mm.h memlib.h config.h
+$(OBJS) mdriver.o: mm.h memlib.h config.h
 # The unmodified course driver predates these compiler diagnostics.
 mdriver.o: CFLAGS += -Wno-unused-but-set-variable -Wno-unused-result
 test:

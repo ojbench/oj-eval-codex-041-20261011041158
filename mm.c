@@ -35,13 +35,12 @@ static inline uint32_t size_of(const unsigned char *p) { return word(p) & ~7u; }
 static inline uint32_t offset(const unsigned char *p) { return (uint32_t)(p - heap_base); }
 static inline unsigned char *at(uint32_t n) { return heap_base + n; }
 
-/* Exact small-size bins followed by logarithmic size classes. */
+/* Exact small-size bins followed by two subdivisions per power of two. */
 static unsigned bin(uint32_t n) {
     if (n <= 128) return n / 8 - 2;
-    unsigned b = 15;
-    n >>= 8;
-    while (n && b < BINS - 1) { ++b; n >>= 1; }
-    return b;
+    unsigned power = 31u - (unsigned)__builtin_clz(n);
+    unsigned b = 15 + 2 * (power - 7) + ((n >> (power - 1)) & 1);
+    return b < BINS ? b : BINS - 1;
 }
 
 /* Remove a known free block in constant time. */
@@ -149,7 +148,7 @@ void *malloc(size_t size) {
             uint32_t n = size_of(p);
             if (n >= need) {
                 if (n < best_size) { best = p; best_size = n; }
-                if (n == need || ++candidates == 12) break;
+                if (n == need || ++candidates == 4) break;
             }
         }
         if (best) break;
@@ -159,7 +158,7 @@ void *malloc(size_t size) {
         unsigned char *end = (unsigned char *)mem_heap_hi() - 3;
         uint32_t tail = (word(end) & PREV_USED) ? 0 : word(end - 4);
         uint32_t growth = need - tail;
-        if (growth < 1024) growth = 1024;
+        if (growth < MIN_BLOCK) growth = MIN_BLOCK;
         best = extend(growth);
         if (!best) return NULL;
     }
