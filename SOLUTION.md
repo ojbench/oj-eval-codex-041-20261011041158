@@ -9,8 +9,10 @@ The heap checker validates physical blocks and free-list membership.
 
 The harness, headers, configuration, and traces come from the official
 [OS2023 practice 2-2 handout](https://github.com/ACMClassCourses/OS2023-Practices/tree/main/practice-2/practice_2-2).
-The allocator is an original implementation. The harness is unchanged;
-compiler warning suppressions apply only to its legacy driver source.
+The allocator is an original implementation. The driver is unchanged;
+compiler warning suppressions apply only to its legacy source. The harness
+uses its supported gettimeofday timer and anonymous heap mapping so that
+neither `/proc/cpuinfo` nor `/dev/zero` is required in the judge sandbox.
 
 Build `code` with `make`. This enables the handout's `OJ` mode, which reads
 one trace from standard input. Build the command-line harness with

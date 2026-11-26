@@ -24,13 +24,16 @@ static char *mem_max_addr;
  * mem_init - initialize the memory system model
  */
 void mem_init(void){
-	int dev_zero = open("/dev/zero", O_RDWR);
 	heap = mmap((void *)0x800000000, /* suggested start*/
 			MAX_HEAP,				/* length */
-			PROT_WRITE,				/* permissions */
-			MAP_PRIVATE,			/* private or shared? */
-			dev_zero,				/* fd */
+			PROT_READ | PROT_WRITE, /* permissions */
+			MAP_PRIVATE | MAP_ANONYMOUS, /* no filesystem dependency */
+			-1,					/* anonymous mapping */
 			0);						/* offset (dunno) */
+	if (heap == MAP_FAILED) {
+		perror("mem_init");
+		_exit(1);
+	}
 	mem_max_addr = heap + MAX_HEAP;
 	mem_brk = heap;					/* heap is empty initially */
 }
